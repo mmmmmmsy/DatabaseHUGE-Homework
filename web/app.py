@@ -7,10 +7,11 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://msy:123456@127.0.0.1:3308/medic'
 db = SQLAlchemy(app)
 
+username=''
 
 @app.route('/')
 def welcome():
-    s = 'UR图如下：'
+    s = 'ER图如下：'
     return render_template('welcome.html',a = s)
 
 #定义模型(为了看得方便，我把它搬上来这里了
@@ -27,6 +28,7 @@ def dex():
 
 @app.route('/login',methods=['post'])
 def login():
+    global username
     username = request.form.get('username')
     password = request.form.get('password')
     pw = db.session.query(User.passwd).filter(User.name == username).all()
