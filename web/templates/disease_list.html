@@ -20,6 +20,7 @@
             <th lay-data="{field:'ifText', width:80, sort:true}">是否有数据记录</th>
             <th lay-data="{field:'lastEditTime'}">上次编辑时间</th>
             <th lay-data="{field:'hid'}">入库id</th>
+            <th lay-data="{field:'imgdata'}">图像</th>
             <th lay-data="{fixed: 'right', width: 165, align:'center', toolbar: '#barDemo'}"></th>
         </tr>
         </thead>
@@ -32,6 +33,7 @@
                 <td>{{item.ifText}}</td>
                 <td>{{item.lastEditTime}}</td>
                 <td>{{item.hid}}</td>
+                <td>{{item.imgdata}}</td>
             </tr>
             {% endfor %}
         </tbody>
