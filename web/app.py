@@ -6,7 +6,7 @@ from PIL import Image as im
 import base64
 from wtforms import StringField, FileField, SubmitField
 from flask_wtf import Form
-
+import datetime
 import hashlib
 
 app = Flask(__name__)
@@ -15,7 +15,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@127.0.0.1:3
 db = SQLAlchemy(app)
 username = ''
 content = ''
-
+d1 = datetime.date.today()
+time = d1.year*10000+d1.month*100+d1.day
 @app.route('/')
 def welcome():
     s = 'ER图如下：'
@@ -114,6 +115,9 @@ def insert():
     diseaseList = DiseaseList(name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid)
     db.session.add(diseaseList)
     db.session.commit()
+    editRecord = EditRecord(content='add in disease_list',editor=username,time=time)
+    db.session.add(editRecord)
+    db.session.commit()
     #添加完成重定向至主页
     return redirect('/table_list')
 
@@ -131,6 +135,9 @@ def delete():
     diseaseList = DiseaseList.query.filter_by(id=id).first()
     db.session.delete(diseaseList)
     db.session.commit()
+    editRecord = EditRecord(content='delete in disease_list',editor=username,time=time)
+    db.session.add(editRecord)
+    db.session.commit()
     return redirect('/table_list')
 
 #修改操作
@@ -146,6 +153,7 @@ def alter():
         ifText = request.args.get("ifText")
         lastEditTime = request.args.get("lastEditTime")
         hid = request.args.get("hid")
+        diseaseList = DiseaseList(id=id,name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid)
         return render_template("disease_list_alter.html",diseaseList = diseaseList)
     else:
         #接收参数，修改数据
@@ -161,6 +169,9 @@ def alter():
         diseaseList.ifText = ifText
         diseaseList.lastEditTime = lastEditTime
         diseaseList.hid = hid
+        db.session.commit()
+        editRecord = EditRecord(content='edit in disease_list',editor=username,time=time)
+        db.session.add(editRecord)
         db.session.commit()
         return redirect('/table_list')
 
@@ -192,6 +203,9 @@ def insert_image():
     db.session.add(image)
     db.session.commit()
     #添加完成重定向至主页
+    editRecord = EditRecord(content='add in image',editor=username,time=time)
+    db.session.add(editRecord)
+    db.session.commit()
     return redirect('/table_list')
 
 @app.route("/insert_page_image")
@@ -208,6 +222,9 @@ def delete_image():
     image = Image.query.filter_by(id=id).first()
     db.session.delete(image)
     db.session.commit()
+    editRecord = EditRecord(content='delete in image',editor=username,time=time)
+    db.session.add(editRecord)
+    db.session.commit()
     return redirect('/table_list')
 
 #修改操作
@@ -219,11 +236,7 @@ def alter_image():
     #进行添加操作
         id = request.args.get("id")
         name = request.args.get("name")
-        # imgroad = request.args.get("img")
-        # f = open(file=imgroad,mode='rb')
-        # imgdata = f.read()
         image = Image(id=id,name=name)
-        # f.close()
         return render_template("image_alter.html",image = image)
     else:
         #接收参数，修改数据
@@ -234,6 +247,9 @@ def alter_image():
         image = Image.query.filter_by(id=id).first()
         image.name = name
         image.img = ls_f
+        db.session.commit()
+        editRecord = EditRecord(content='edit in image',editor=username,time=time)
+        db.session.add(editRecord)
         db.session.commit()
         return redirect('/table_list')
 
@@ -261,6 +277,9 @@ def insert_disease_suffered():
     diseaseSuffered = DiseaseSuffered(hid=hid,diseaseGet=diseaseGet,time=time)
     db.session.add(diseaseSuffered)
     db.session.commit()
+    editRecord = EditRecord(content='add in Disease_suffered',editor=username,time=time)
+    db.session.add(editRecord)
+    db.session.commit()
     #添加完成重定向至主页
     return redirect('/table_list')
 
@@ -277,6 +296,9 @@ def delete_disease_suffered():
     id = request.args.get("id")
     diseaseSuffered = DiseaseSuffered.query.filter_by(id=id).first()
     db.session.delete(diseaseSuffered)
+    db.session.commit()
+    editRecord = EditRecord(content='delete in Disease_suffered',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     return redirect('/table_list')
 
@@ -304,6 +326,9 @@ def alter_disease_suffered():
         diseaseSuffered.diseaseGet = diseaseGet
         diseaseSuffered.time = time
         db.session.commit()
+        editRecord = EditRecord(content='edit in Disease_suffered',editor=username,time=time)
+        db.session.add(editRecord)
+        db.session.commit()
         return redirect('/table_list')
 
 #定义模型
@@ -317,8 +342,11 @@ class EditRecord(db.Model):
 #查询所有数据
 @app.route("/select_edit_record")
 def select_edit_record():
-    Edit_Record = EditRecord.query.order_by(EditRecord.id.desc()).all()
-    return render_template("edit_record.html",edit_record = Edit_Record)
+    if content == 'admin':
+        Edit_Record = EditRecord.query.order_by(EditRecord.id.desc()).all()
+        return render_template("edit_record.html",edit_record = Edit_Record)
+    else:
+        return render_template('no_permission.html')
 
 #添加数据
 @app.route('/insert_edit_record',methods=['GET','POST'])
@@ -400,9 +428,11 @@ def insert_people():
     age = request.form['age']
     disease_history = request.form['disease_history']
     work = request.form['work']
-
     ppeople = People(hid=hid,address=address,age=age,disease_history=disease_history,work=work)
     db.session.add(ppeople)
+    db.session.commit()
+    editRecord = EditRecord(content='add in People',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
     return redirect('/table_list')
@@ -420,6 +450,9 @@ def delete_people():
     id = request.args.get("id")
     ppeople = People.query.filter_by(id=id).first()
     db.session.delete(ppeople)
+    db.session.commit()
+    editRecord = EditRecord(content='delete in People',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     return redirect('/table_list')
 
@@ -453,6 +486,9 @@ def alter_people():
         ppeople.disease_history = disease_history
         ppeople.work = work
         db.session.commit()
+        editRecord = EditRecord(content='edit in People',editor=username,time=time)
+        db.session.add(editRecord)
+        db.session.commit()
         return redirect('/table_list')
 
 class Data(db.Model):
@@ -473,9 +509,11 @@ def insert_data():
     #进行添加操作
     name = request.form['name']
     ddata = request.form['ddata']
-
     pdata = Data(name=name,ddata=ddata)
     db.session.add(pdata)
+    db.session.commit()
+    editRecord = EditRecord(content='add in data',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
     return redirect('/table_list')
@@ -493,6 +531,9 @@ def delete_data():
     id = request.args.get("id")
     pdata = Data.query.filter_by(id=id).first()
     db.session.delete(pdata)
+    db.session.commit()
+    editRecord = EditRecord(content='delete in data',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     return redirect('/table_list')
 
@@ -517,6 +558,9 @@ def alter_data():
         pdata.name = name
         pdata.ddata = ddata
         db.session.commit()
+        editRecord = EditRecord(content='edit in People',editor=username,time=time)
+        db.session.add(editRecord)
+        db.session.commit()
         return redirect('/table_list')
 
 
@@ -539,9 +583,11 @@ def insert_user():
     content = request.form['content']
     passwd = request.form['passwd']
     md5_passwd = hashlib.md5(passwd.encode("utf-8")).hexdigest()
-
     user = User(name=name,content=content,passwd=md5_passwd)
     db.session.add(user)
+    db.session.commit()
+    editRecord = EditRecord(content='add in User',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
     return redirect('/table_list')
@@ -559,6 +605,9 @@ def delete_user():
     id = request.args.get("id")
     user = User.query.filter_by(id=id).first()
     db.session.delete(user)
+    db.session.commit()
+    editRecord = EditRecord(content='delete in user',editor=username,time=time)
+    db.session.add(editRecord)
     db.session.commit()
     return redirect('/table_list')
 
@@ -585,6 +634,9 @@ def alter_user():
         user.name=name
         user.content=content
         user.passwd = passwd
+        db.session.commit()
+        editRecord = EditRecord(content='edit in user',editor=username,time=time)
+        db.session.add(editRecord)
         db.session.commit()
         return redirect('/table_list')
 
