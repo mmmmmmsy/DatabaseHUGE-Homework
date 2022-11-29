@@ -43,11 +43,8 @@ def login():
     md5_passwd = hashlib.md5(password.encode("utf-8")).hexdigest()
     pw = db.session.query(User.passwd).filter(User.name == username).all()
 
-    if username == 'test123123' or md5_passwd == pw[0][0] :
-        if username == 'test123123':
-            content = 'admin'
-        else:
-            content = User.query.filter_by(name=username).first().content
+    if md5_passwd == pw[0][0] :
+        content = User.query.filter_by(name=username).first().content
         return render_template('login_success.html',content = content)
     else:
         return render_template('login.html',msg = '用户名或密码错误！')
@@ -821,8 +818,6 @@ def query7exe():
         给定修改人查询修改时间和修改内容
         db:连接的数据库
     '''
-    print(content)
-
     data_editor = request.form["data_editor"]
     sql = '''select content , time  from edit_Record eR where eR.editor = '{}' '''.format(data_editor)
     ret = db.session.execute(sql)
