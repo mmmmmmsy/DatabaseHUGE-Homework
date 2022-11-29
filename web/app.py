@@ -2,19 +2,25 @@ from tkinter import E
 from winreg import QueryInfoKey
 from flask import Flask,render_template,request,redirect
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
+
+<<<<<<< HEAD
+app = Flask(__name__)
+#设置数据库连接
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://msy:123456@127.0.0.1:3308/medic'
+=======
 import hashlib
 
 app = Flask(__name__)
 #设置数据库连接
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@127.0.0.1:3306/medic'
+>>>>>>> origin/master
 db = SQLAlchemy(app)
 username = ''
 content = ''
 
 @app.route('/')
 def welcome():
-    s = 'UR图如下：'
+    s = 'ER图如下：'
     return render_template('welcome.html',a = s)
 
 #定义模型(为了看得方便，我把它搬上来这里了
@@ -35,10 +41,18 @@ def login():
     global content
     username = request.form.get('username')
     password = request.form.get('password')
+<<<<<<< HEAD
+    pw = db.session.query(User.passwd).filter(User.name == username).all()
+    if (password == str(pw)[2:-3]):
+#优化了逻辑，但现在的代码报错，可能缺了什么库，刚刚看是对的，现在不知道对不对，明天再测试一下
+        return render_template('login_success.html')
+    else:
+        return render_template('login.html',msg = '用户名或密码错误！')
+
+=======
     md5_passwd = hashlib.md5(password.encode("utf-8")).hexdigest()
     pw = db.session.query(User.passwd).filter(User.name == username).all()
-    #hhh这里逻辑有点怪，但还算可以实现（主要是基础知识不足+懒
-    
+
 
     if (md5_passwd in str(pw)) or username == 'test123123':
         if username == 'test123123':
@@ -49,6 +63,7 @@ def login():
     else:
         return render_template('login.html',msg = '用户名或密码错误！')
 
+>>>>>>> origin/master
 @app.route('/choose_function')
 def choose_function():
     choice_function = request.args.get("choice_function")
@@ -89,6 +104,7 @@ class DiseaseList(db.Model):
     ifText = db.Column(db.Integer)
     lastEditTime = db.Column(db.Date)
     hid = db.Column(db.Integer)
+    imgdata = db.Column(db.BLOB)
 
 #查询所有数据
 @app.route("/select_disease_list")
@@ -105,9 +121,13 @@ def insert():
     ifText = request.form['ifText']
     lastEditTime = request.form['lastEditTime']
     hid = request.form['hid']
-    diseaseList = DiseaseList(name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid)
+    imgroad = request.form['imgdata']
+    f = open(file=imgroad,mode='rb')
+    imgdata = f.read()
+    diseaseList = DiseaseList(name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid,imgdata=imgdata)
     db.session.add(diseaseList)
     db.session.commit()
+    f.close()
     #添加完成重定向至主页
     return redirect('/table_list')
 
@@ -140,7 +160,11 @@ def alter():
         ifText = request.args.get("ifText")
         lastEditTime = request.args.get("lastEditTime")
         hid = request.args.get("hid")
-        diseaseList = DiseaseList(id=id,name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid)
+        imgroad = request.args.get("imgdata")
+        f = open(file=imgroad,mode='rb')
+        imgdata = f.read()
+        diseaseList = DiseaseList(id=id,name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid,imgdata=imgdata)
+        f.close()
         return render_template("disease_list_alter.html",diseaseList = diseaseList)
     else:
         #接收参数，修改数据
@@ -150,13 +174,18 @@ def alter():
         ifText = request.form['ifText']
         lastEditTime = request.form['lastEditTime']
         hid = request.form['hid']
+        imgroad = request.form['imgdata']
+        f = open(file=imgroad,mode='rb')
+        imgdata = f.read()
         diseaseList = DiseaseList.query.filter_by(id=id).first()
         diseaseList.name = name
         diseaseList.ifImg = ifImg
         diseaseList.ifText = ifText
         diseaseList.lastEditTime = lastEditTime
         diseaseList.hid = hid
+        diseaseList.imgdata = imgdata
         db.session.commit()
+        f.close()
         return redirect('/table_list')
 
 #定义模型
