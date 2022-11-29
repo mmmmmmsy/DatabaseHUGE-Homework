@@ -80,9 +80,11 @@ def choose_table():
     elif choice_table == "4":
         return select_people()
     elif choice_table == "5":
-        return select_user()
-    else:
         return select_image()
+    elif choice_table == "6":
+        return select_data()
+    else:
+        return select_user()
 
 #定义模型
 class DiseaseList(db.Model):
@@ -450,6 +452,70 @@ def alter_people():
         ppeople.age = age
         ppeople.disease_history = disease_history
         ppeople.work = work
+        db.session.commit()
+        return redirect('/table_list')
+
+class Data(db.Model):
+    #表模型
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
+    name = db.Column(db.String(255))
+    ddata = db.Column(db.String(255))
+
+#查询所有数据
+@app.route("/select_data")
+def select_data():
+    pdata = Data.query.order_by(Data.id.desc()).all()
+    return render_template("data.html",data = pdata)
+
+#添加数据
+@app.route('/insert_data',methods=['GET','POST'])
+def insert_data():
+    #进行添加操作
+    name = request.form['name']
+    ddata = request.form['ddata']
+
+    pdata = Data(name=name,ddata=ddata)
+    db.session.add(pdata)
+    db.session.commit()
+    #添加完成重定向至主页
+    return redirect('/table_list')
+
+@app.route("/insert_page_data")
+def insert_page_data():
+    #跳转至添加信息页面
+    return render_template("data_insert.html")
+
+
+#删除数据
+@app.route("/delete_data",methods=['GET'])
+def delete_data():
+    #操作数据库得到目标数据，before_number表示删除之前的数量，after_name表示删除之后的数量
+    id = request.args.get("id")
+    pdata = Data.query.filter_by(id=id).first()
+    db.session.delete(pdata)
+    db.session.commit()
+    return redirect('/table_list')
+
+#修改操作
+@app.route("/alter_data",methods=['GET','POST'])
+def alter_data():
+    # 可以通过请求方式来改变处理该请求的具体操作
+    # 比如用户访问/alter页面  如果通过GET请求则返回修改页面 如果通过POST请求则使用修改操作
+    if request.method == 'GET':
+    #进行添加操作
+        id = request.args.get("id")
+        name = request.args.get("name")
+        ddata= request.args.get("ddata")
+        pdata = Data(id = id,name=name,ddata=ddata)
+        return render_template("data_alter.html",data = pdata)
+    else:
+        #接收参数，修改数据
+        id = request.form['id']
+        name = request.form['name']
+        ddata = request.form['ddata']
+        pdata = Data.query.filter_by(id=id).first()
+        pdata.name = name
+        pdata.ddata = ddata
         db.session.commit()
         return redirect('/table_list')
 

@@ -1,0 +1,68 @@
+<! DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" href="../static/layui/css/layui.css">
+</head>
+<body>
+    <div align="center">
+        <br>
+        <a href="insert_page_data">添加信息</a>
+        <br>
+        <br>
+        <table  id = 'tabledemo'lay-filter="test">
+        <thead>
+        <tr>
+            <th lay-data="{field:'id', width:300}">编号</th>
+            <th lay-data="{field:'name', width:300}">疾病名称</th>
+            <th lay-data="{field:'img', width:300}">数据记录</th>
+            <th lay-data="{fixed: 'right', width: 165, align:'center', toolbar: '#barDemo'}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in data %}
+            <tr>
+                <td>{{item.id}}</td>
+                <td>{{item.name}}</td>
+                <td>{{item.ddata}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script src="../static/layui/layui.js"></script>
+<script>
+
+    layui.use('table', function () {
+        var table = layui.table;
+
+//转换静态表格
+        table.init('test', {
+            height: 1000,
+            width: 1000//设置高度
+            ,limit:100
+        });
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+    var data = obj.data //获得当前行数据
+    ,layEvent = obj.event; //获得 lay-event 对应的值
+    if(layEvent === 'detail'){
+      layer.msg('查看操作');
+    } else if(layEvent === 'del'){
+    layer.confirm('真的删除行么', function(index){
+        location.href='/delete_data?id='+data.id;
+      });
+    } else if(layEvent === 'edit'){
+      location.href="/alter_data?id="+data.id+"&name="+data.name;
+    }
+  });
+    });
+</script>
+</body>
+</html>
