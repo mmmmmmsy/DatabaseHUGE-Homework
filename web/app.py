@@ -116,7 +116,7 @@ def insert():
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_disease_list')
 
 @app.route("/insert_page_disease_list")
 def insert_page():
@@ -135,7 +135,7 @@ def delete():
     editRecord = EditRecord(content='delete in disease_list',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_disease_list')
 
 #修改操作
 @app.route("/alter_disease_list",methods=['GET','POST'])
@@ -170,7 +170,7 @@ def alter():
         editRecord = EditRecord(content='edit in disease_list',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_disease_list')
 
 class Image(db.Model):
     #表模型
@@ -203,7 +203,7 @@ def insert_image():
     editRecord = EditRecord(content='add in image',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_image')
 
 @app.route("/insert_page_image")
 def insert_page_image():
@@ -222,7 +222,7 @@ def delete_image():
     editRecord = EditRecord(content='delete in image',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_image')
 
 #修改操作
 @app.route("/alter_image",methods=['GET','POST'])
@@ -248,7 +248,7 @@ def alter_image():
         editRecord = EditRecord(content='edit in image',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_image')
 
 #定义模型
 class DiseaseSuffered(db.Model):
@@ -278,7 +278,7 @@ def insert_disease_suffered():
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_disease_suffered')
 
 @app.route("/insert_page_disease_suffered")
 def insert_page_disease_suffered():
@@ -297,7 +297,7 @@ def delete_disease_suffered():
     editRecord = EditRecord(content='delete in Disease_suffered',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_disease_suffered')
 
 #修改操作
 @app.route("/alter_disease_suffered",methods=['GET','POST'])
@@ -326,7 +326,7 @@ def alter_disease_suffered():
         editRecord = EditRecord(content='edit in Disease_suffered',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_disease_suffered')
 
 #定义模型
 class EditRecord(db.Model):
@@ -356,7 +356,7 @@ def insert_edit_record():
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_edit_record')
 
 @app.route("/insert_page_edit_record")
 def insert_page_edit_record():
@@ -372,7 +372,7 @@ def delete_edit_record():
     editRecord = EditRecord.query.filter_by(id=id).first()
     db.session.delete(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_edit_record')
 
 #修改操作
 @app.route("/alter_edit_record",methods=['GET','POST'])
@@ -398,7 +398,7 @@ def alter_edit_record():
         editRecord.editor = editor
         editRecord.time = time
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_edit_record')
 
 #定义模型
 class People(db.Model):
@@ -407,7 +407,7 @@ class People(db.Model):
     hid = db.Column(db.Integer)
     age = db.Column(db.Integer)
     address = db.Column(db.String(255))
-    disease_history = db.Column(db.String(255))
+    # disease_history = db.Column(db.String(255))
     work = db.Column(db.String(255))
 
 #查询所有数据
@@ -423,16 +423,16 @@ def insert_people():
     hid = request.form['hid']
     address = request.form['address']
     age = request.form['age']
-    disease_history = request.form['disease_history']
+    # disease_history = request.form['disease_history']
     work = request.form['work']
-    ppeople = People(hid=hid,address=address,age=age,disease_history=disease_history,work=work)
+    ppeople = People(hid=hid,address=address,age=age,work=work)
     db.session.add(ppeople)
     db.session.commit()
     editRecord = EditRecord(content='add in People',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_people')
 
 @app.route("/insert_page_people")
 def insert_page_people():
@@ -451,7 +451,7 @@ def delete_people():
     editRecord = EditRecord(content='delete in People',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_people')
 
 #修改操作
 @app.route("/alter_people",methods=['GET','POST'])
@@ -464,9 +464,9 @@ def alter_people():
         hid = request.args.get("hid")
         address= request.args.get("address")
         age = request.args.get("age")
-        disease_history = request.args.get("disease_history")
+        # disease_history = request.args.get("disease_history")
         work = request.args.get("work")
-        ppeople = People(id = id,hid=hid,address=address,age=age,disease_history=disease_history,work=work)
+        ppeople = People(id = id,hid=hid,address=address,age=age,work=work)
         return render_template("people_alter.html",people = ppeople)
     else:
         #接收参数，修改数据
@@ -474,19 +474,19 @@ def alter_people():
         hid = request.form['hid']
         address = request.form['address']
         age = request.form['age']
-        disease_history = request.form['disease_history']
+        # disease_history = request.form['disease_history']
         work = request.form['work']
         ppeople = People.query.filter_by(id=id).first()
         ppeople.hid = hid
         ppeople.address = address
         ppeople.age = age
-        ppeople.disease_history = disease_history
+        # ppeople.disease_history = disease_history
         ppeople.work = work
         db.session.commit()
         editRecord = EditRecord(content='edit in People',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_people')
 
 class Data(db.Model):
     #表模型
@@ -513,7 +513,7 @@ def insert_data():
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_data')
 
 @app.route("/insert_page_data")
 def insert_page_data():
@@ -532,7 +532,7 @@ def delete_data():
     editRecord = EditRecord(content='delete in data',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_data')
 
 #修改操作
 @app.route("/alter_data",methods=['GET','POST'])
@@ -558,10 +558,8 @@ def alter_data():
         editRecord = EditRecord(content='edit in People',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_data')
 
-
-  
 #查询所有数据
 @app.route("/select_user")
 def select_user():
@@ -587,7 +585,7 @@ def insert_user():
     db.session.add(editRecord)
     db.session.commit()
     #添加完成重定向至主页
-    return redirect('/table_list')
+    return redirect('/select_user')
 
 @app.route("/insert_page_user")
 def insert_page_user():
@@ -606,7 +604,7 @@ def delete_user():
     editRecord = EditRecord(content='delete in user',editor=username,time=time)
     db.session.add(editRecord)
     db.session.commit()
-    return redirect('/table_list')
+    return redirect('/select_user')
 
 #修改操作
 @app.route("/alter_user",methods=['GET','POST'])
@@ -635,7 +633,7 @@ def alter_user():
         editRecord = EditRecord(content='edit in user',editor=username,time=time)
         db.session.add(editRecord)
         db.session.commit()
-        return redirect('/table_list')
+        return redirect('/select_user')
 
 '''
 各表展示部分到此结束
