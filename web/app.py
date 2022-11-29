@@ -2,7 +2,11 @@ from tkinter import E
 from winreg import QueryInfoKey
 from flask import Flask,render_template,request,redirect
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
+from PIL import Image as im
+import base64
+from wtforms import StringField, FileField, SubmitField
+from flask_wtf import Form
+
 import hashlib
 
 app = Flask(__name__)
@@ -14,7 +18,7 @@ content = ''
 
 @app.route('/')
 def welcome():
-    s = 'UR图如下：'
+    s = 'ER图如下：'
     return render_template('welcome.html',a = s)
 
 #定义模型(为了看得方便，我把它搬上来这里了
@@ -37,10 +41,8 @@ def login():
     password = request.form.get('password')
     md5_passwd = hashlib.md5(password.encode("utf-8")).hexdigest()
     pw = db.session.query(User.passwd).filter(User.name == username).all()
-    #hhh这里逻辑有点怪，但还算可以实现（主要是基础知识不足+懒
-    
 
-    if (md5_passwd in str(pw)) or username == 'test123123':
+    if username == 'test123123' or md5_passwd == pw[0][0] :
         if username == 'test123123':
             content = 'admin'
         else:
@@ -77,8 +79,10 @@ def choose_table():
         return select_edit_record()
     elif choice_table == "4":
         return select_people()
-    else:
+    elif choice_table == "5":
         return select_user()
+    else:
+        return select_image()
 
 #定义模型
 class DiseaseList(db.Model):
@@ -140,7 +144,6 @@ def alter():
         ifText = request.args.get("ifText")
         lastEditTime = request.args.get("lastEditTime")
         hid = request.args.get("hid")
-        diseaseList = DiseaseList(id=id,name=name,ifImg=ifImg,ifText=ifText,lastEditTime=lastEditTime,hid=hid)
         return render_template("disease_list_alter.html",diseaseList = diseaseList)
     else:
         #接收参数，修改数据
@@ -156,6 +159,79 @@ def alter():
         diseaseList.ifText = ifText
         diseaseList.lastEditTime = lastEditTime
         diseaseList.hid = hid
+        db.session.commit()
+        return redirect('/table_list')
+
+class Image(db.Model):
+    #表模型
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
+    name = db.Column(db.String(255))
+    img = db.Column(db.BLOB)
+
+class upForm(Form):
+    name = StringField('Name')
+    file = FileField('file')
+    submit = SubmitField('submit')
+
+#查询所有数据
+@app.route("/select_image")
+def select_image():
+    Iimage = Image.query.order_by(Image.id.desc()).all()
+    return render_template("image.html",image = Iimage, base64=base64)
+
+#添加数据
+@app.route('/insert_image',methods=['GET','POST'])
+def insert_image():
+    #进行添加操作
+    name = request.form['name']
+    imgdata = request.files['img'].read()
+    ls_f=base64.b64encode(imgdata)
+    image = Image(name=name,img=ls_f)
+    db.session.add(image)
+    db.session.commit()
+    #添加完成重定向至主页
+    return redirect('/table_list')
+
+@app.route("/insert_page_image")
+def insert_page_image():
+    #跳转至添加信息页面
+    return render_template("image_insert.html")
+
+
+#删除数据
+@app.route("/delete_image",methods=['GET'])
+def delete_image():
+    #操作数据库得到目标数据，before_number表示删除之前的数量，after_name表示删除之后的数量
+    id = request.args.get("id")
+    image = Image.query.filter_by(id=id).first()
+    db.session.delete(image)
+    db.session.commit()
+    return redirect('/table_list')
+
+#修改操作
+@app.route("/alter_image",methods=['GET','POST'])
+def alter_image():
+    # 可以通过请求方式来改变处理该请求的具体操作
+    # 比如用户访问/alter页面  如果通过GET请求则返回修改页面 如果通过POST请求则使用修改操作
+    if request.method == 'GET':
+    #进行添加操作
+        id = request.args.get("id")
+        name = request.args.get("name")
+        # imgroad = request.args.get("img")
+        # f = open(file=imgroad,mode='rb')
+        # imgdata = f.read()
+        image = Image(id=id,name=name)
+        # f.close()
+        return render_template("image_alter.html",image = image)
+    else:
+        #接收参数，修改数据
+        name = request.form['name']
+        id = request.form['id']
+        imgdata = request.files['img'].read()
+        ls_f=base64.b64encode(imgdata)
+        image = Image.query.filter_by(id=id).first()
+        image.name = name
+        image.img = ls_f
         db.session.commit()
         return redirect('/table_list')
 

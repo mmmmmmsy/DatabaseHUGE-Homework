@@ -8,32 +8,24 @@
 <body>
     <div align="center">
         <br>
-        <a href="insert_page_disease_list">添加信息</a>
+        <a href="insert_page_image">添加信息</a>
         <br>
         <br>
         <table  id = 'tabledemo'lay-filter="test">
         <thead>
         <tr>
-            <th lay-data="{field:'id', width:100}">编号</th>
-            <th lay-data="{field:'name', width:100}">疾病名称</th>
-            <th lay-data="{field:'ifImg', width:100}">是否有图像记录</th>
-            <th lay-data="{field:'ifText', width:80, sort:true}">是否有数据记录</th>
-            <th lay-data="{field:'lastEditTime'}">上次编辑时间</th>
-            <th lay-data="{field:'hid'}">入库id</th>
-            <th lay-data="{field:'imgdata'}">图像</th>
+            <th lay-data="{field:'id', width:200}">编号</th>
+            <th lay-data="{field:'name', width:400}">疾病名称</th>
+            <th lay-data="{field:'img', width:100}">图像记录</th>
             <th lay-data="{fixed: 'right', width: 165, align:'center', toolbar: '#barDemo'}"></th>
         </tr>
         </thead>
         <tbody>
-        {% for item in disease_list %}
+        {% for item in image %}
             <tr>
                 <td>{{item.id}}</td>
                 <td>{{item.name}}</td>
-                <td>{{item.ifImg}}</td>
-                <td>{{item.ifText}}</td>
-                <td>{{item.lastEditTime}}</td>
-                <td>{{item.hid}}</td>
-                <td>{{item.imgdata}}</td>
+                <td><img src="data:;base64,{{item.img.decode()}}"/></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -64,10 +56,10 @@
       layer.msg('查看操作');
     } else if(layEvent === 'del'){
     layer.confirm('真的删除行么', function(index){
-        location.href='/delete_disease_list?id='+data.id;
+        location.href='/delete_image?id='+data.id;
       });
     } else if(layEvent === 'edit'){
-      location.href="/alter_disease_list?id="+data.id+"&ifImg="+data.ifImg+"&ifText="+data.ifText+"&lastEditTime="+data.lastEditTime+"&hid="+data.hid;
+      location.href="/alter_image?id="+data.id+"&name="+data.name;
     }
   });
     });
